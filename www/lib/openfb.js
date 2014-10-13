@@ -81,7 +81,6 @@ var openFB = (function () {
         }
         if (callback) callback(loginStatus);
     }
-
     /**
      * Login to Facebook using OAuth. If running in a Browser, the OAuth workflow happens in a a popup window.
      * If running in Cordova container, it happens using the In-App Browser. Don't forget to install the In-App Browser

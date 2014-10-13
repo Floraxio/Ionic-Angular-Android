@@ -8,9 +8,9 @@ var GLOBAL_SCOPE_FB_SEC = 'id,name,about,bio,birthday,email,favorite_athletes,fa
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers'])
+angular.module('starter', ['ionic','starter.services', 'starter.controllers'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, DB) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -22,6 +22,8 @@ angular.module('starter', ['ionic', 'starter.controllers'])
       StatusBar.styleDefault();
     }
   });
+  // INIT SQL
+  DB.init();
 })
 
 .config(function($stateProvider, $urlRouterProvider,$httpProvider) {
@@ -96,6 +98,6 @@ angular.module('starter', ['ionic', 'starter.controllers'])
   $urlRouterProvider.otherwise('/app/acceuil');
 });
 
-// FBLogin
+// INIT FBLogin
 openFB.init({appId: '1475373929411664'});
 

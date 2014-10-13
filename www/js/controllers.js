@@ -1,6 +1,6 @@
-angular.module('starter.controllers', [])
+angular.module('starter.controllers', ['starter.services'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, Document) {
   // Form data for the login modal
   $scope.loginData = {};
 
@@ -33,27 +33,33 @@ angular.module('starter.controllers', [])
                     success: function(user) { // set
                       // global app assign user
                         $scope.$apply(function() {
-                          console.log (user);
                             $scope.user = user;
-                            console.log ("user");
+                            var token = response.authResponse.token;
+                                // insert or update item
+                                Document.addUser(user.id,user.name,user.gender,token).then(function(documents){
+                                    $scope.documents = documents;
+                                    console.log("addUser");
+                                    console.log(documents);
+                                });
+                            console.log ("userfb conected");
                             console.log(user);
                         });
-                        //SEND TO SERVER
+                        /*
+                        //SEND FIRST INFOS Conect infos TO SERVER && update sql
                         $http.post(GLOBAL_URL+'/user', {                            id:user.id,
                           name:user.name,
                           gender:user.gender
-                        }).
-                        success(function(data, status, headers, config) {
-                          console.log("ok");
+                        }).success(function(data, status, headers, config) {
+                          console.log("ok SERVER");
                           // this callback will be called asynchronously
                           // when the response is available
                           //redirect to profil with update infos server
-                        }).
-                        error(function(data, status, headers, config) {
-                          console.log("problem");
+                        }).error(function(data, status, headers, config) {
+                          console.log("problem avec SERVER NodeJS");
                           // called asynchronously if an error occurs
                           // or server returns response with an error status.
                         });
+                        */
                     },
                     error: function(error) {
                         alert('Facebook error: ' + error.error_description);
@@ -77,8 +83,35 @@ angular.module('starter.controllers', [])
       $scope.closeLogin();
     }, 1000);
   };
-})
+////////////////////////////////
+    // SQL storage examples
+    //$scope.documents = [];
+    //$scope.document = null;
+    Document.countAll().then(function(documents){
+        $scope.documents = documents;
+        console.log("countAll");
+        console.log(documents);
+    })
 
+
+    /*Document.countAll().then(function(documents){
+        $scope.documents = documents;
+        console.log("countAll");
+        console.log(documents);
+    });*/
+    /*Document.all().then(function(documents){
+        $scope.documents = documents;
+        console.log(documents);
+    });*/
+    // Get one document, example with id = 2
+    /*Document.getById(0).then(function(document) {
+        $scope.document = document;
+    });*/
+///////////////////////////////////////
+})
+/*.controller('DocumentCtrl', function($scope, Document) {
+    
+})*/
 .controller('PlaylistsCtrl', function($scope) {
   $scope.playlists = [
     { title: 'Reggae', id: 1 },
@@ -89,15 +122,33 @@ angular.module('starter.controllers', [])
     { title: 'Cowbell', id: 6 }
   ];
 })
-.controller('ProfileCtrl', function($scope) {
+.controller('ProfileCtrl', function($scope, $http) {
+  // request api with all infos
     openFB.api({
         path: '/me',
-        params: {fields: 'id,name'},
+        params: {fields: ''},
         success: function(user) {
+            // set view user
             $scope.$apply(function() {
-              console.log (user);
                 $scope.user = user;
             });
+            // set to SERVER NODE news (if needed timing)
+            console.log (user);
+            //SEND user infos TO SERVER
+            $http.post(GLOBAL_URL+'/user', {
+              objectFB:user
+            }).success(function(data, status, headers, config) {
+              console.log("ok send user info to SERVER");
+              // this callback will be called asynchronously
+              // when the response is available
+              //redirect to profil with update infos server
+            }).error(function(data, status, headers, config) {
+              console.log("problem avec PROFIL SERVER NodeJS");
+              // called asynchronously if an error occurs
+              // or server returns response with an error status.
+            });
+
+            // HTTP NODE JS
         },
         error: function(error) {
             alert('Facebook error: ' + error.error_description);

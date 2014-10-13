@@ -6,13 +6,20 @@
     <h1>Profil</h1>
     <div class="list card">
         <div class="item">
-            <p>{{user.name}}</p>
-            <p>{{user.city}}</p>
+            <p>{{user.name}}<br>{{user.city}}</p>
         </div>
         <div class="item item-body">
+        	Votre photo Facebook ! <br>
             <img src="http://graph.facebook.com/{{user.id}}/picture?width=100&height=100"/>
+        	<br>
+        	Votre acroche : {{user.bio}}
+        	<br>
+        	Votre email (confidentiel) : {{user.bio}}
+        	<br>
+        	Date naissance : {{user.email}}
+            <br>
         </div>
-        bio
+        
     </div>
 
   </ion-content>
