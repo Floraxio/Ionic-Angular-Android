@@ -34,13 +34,14 @@ angular.module('starter.controllers', ['starter.services'])
                       // global app assign user
                         $scope.$apply(function() {
                             $scope.user = user;
+                            //GLOBALS_VARS['user'] user;
                             var token = response.authResponse.token;
                                 // insert or update item
-                                Document.addUser(user.id,user.name,user.gender,token).then(function(documents){
+                                /*Document.addUser(user.id,user.name,user.gender,token).then(function(documents){
                                     $scope.documents = documents;
                                     console.log("addUser");
                                     console.log(documents);
-                                });
+                                });*/
                             console.log ("userfb conected");
                             console.log(user);
                         });
@@ -65,7 +66,7 @@ angular.module('starter.controllers', ['starter.services'])
                         alert('Facebook error: ' + error.error_description);
                     }
                   });
-                alert ("Vous etes connecte avec Facebook !");
+                alert ("Vous etes connecte avec Facebook ! Veuillez noter que FB est la seule plateforme de conection ici (API-V2) !");
               } else {
                   alert('Facebook login failed');
               }
@@ -87,11 +88,11 @@ angular.module('starter.controllers', ['starter.services'])
     // SQL storage examples
     //$scope.documents = [];
     //$scope.document = null;
-    Document.countAll().then(function(documents){
+    /*Document.countAll().then(function(documents){
         $scope.documents = documents;
         console.log("countAll");
         console.log(documents);
-    })
+    });*/
 
 
     /*Document.countAll().then(function(documents){
@@ -128,6 +129,8 @@ angular.module('starter.controllers', ['starter.services'])
         path: '/me',
         params: {fields: ''},
         success: function(user) {
+          console.log ("ccccc");
+          console.log (user);
             // set view user
             $scope.$apply(function() {
                 $scope.user = user;
@@ -135,10 +138,21 @@ angular.module('starter.controllers', ['starter.services'])
             // set to SERVER NODE news (if needed timing)
             console.log (user);
             //SEND user infos TO SERVER
+            /*
             $http.post(GLOBAL_URL+'/user', {
               objectFB:user
             }).success(function(data, status, headers, config) {
               console.log("ok send user info to SERVER");
+              console.log ('data receive all ok');
+              //console.log (data);
+
+              // insert or update item User
+              Document.addUser(user.id,user.name,user.gender,token, data.server_token).then(function(documents){
+                  //$scope.documents = documents;
+                  console.log("addUser");
+                  console.log(documents);
+              });
+
               // this callback will be called asynchronously
               // when the response is available
               //redirect to profil with update infos server
@@ -147,12 +161,46 @@ angular.module('starter.controllers', ['starter.services'])
               // called asynchronously if an error occurs
               // or server returns response with an error status.
             });
-
+            */
             // HTTP NODE JS
         },
         error: function(error) {
             alert('Facebook error: ' + error.error_description);
         }
+    });
+})
+.controller('SearchCtrl', function($scope, $http) {
+    // search geoloc for proximity
+    navigator.geolocation.getCurrentPosition(function(location){
+      console.log ("ok geoloc");
+      console.log (location);
+      /* Send to SERVER my POSITION */
+      $http.post(GLOBAL_URL+'/user/geolocation', {
+        
+        geolocation:location
+      }).success(function(data, status, headers, config) {
+        console.log("ok send user info to SERVER");
+        console.log ('data receive geoloc ! ');
+        console.log (data);
+
+        //$scope.location = data;
+        // insert or update item
+        /*Document.updateTokenServer(user.token, data.server_token).then(function(documents){
+            $scope.documents = documents;
+            console.log("updateToken");
+            console.log(documents);
+        });*/
+
+        // this callback will be called asynchronously
+        // when the response is available
+        //redirect to profil with update infos server
+      }).error(function(data, status, headers, config) {
+        console.log("problem avec PROFIL SERVER NodeJS");
+        // called asynchronously if an error occurs
+        // or server returns response with an error status.
+      });
+    }, function(){
+      console.log ("error GEOLOCALISATION !");
     });
 })
 .controller('PlaylistCtrl', function($scope, $stateParams) {

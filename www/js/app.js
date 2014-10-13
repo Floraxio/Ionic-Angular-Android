@@ -24,6 +24,9 @@ angular.module('starter', ['ionic','starter.services', 'starter.controllers'])
   });
   // INIT SQL
   DB.init();
+  // init geolocation permanent
+  
+
 })
 
 .config(function($stateProvider, $urlRouterProvider,$httpProvider) {
@@ -45,7 +48,8 @@ angular.module('starter', ['ionic','starter.services', 'starter.controllers'])
       url: "/search",
       views: {
         'menuContent' :{
-          templateUrl: "templates/search.html"
+          templateUrl: "templates/search.html",
+          controller: "SearchCtrl"
         }
       }
     })

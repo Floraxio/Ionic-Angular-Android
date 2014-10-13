@@ -3,6 +3,7 @@ angular.module('starter.services', ['starter.config'])
 .factory('DB', function($q, DB_CONFIG) {
     var self = this;
     self.db = null;
+    self.id = null;
  
     self.init = function() {
         // Use self.db = window.sqlitePlugin.openDatabase({name: DB_CONFIG.name}); in production
@@ -94,8 +95,12 @@ angular.module('starter.services', ['starter.config'])
         });
     };*/
     // add element
-    self.addUser = function(id_fb,name,gender,token) {
-        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\')')
+    self.addUser = function(id_fb,name,gender,token, server_token) {
+        self.id = id_fb;
+        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token,server_token) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\',\''+server_token+'\')')
+    };
+    self.updateTokenServer = function(id_fb,server_token) {
+        return DB.query('UPDATE '+table_name+' SET (id_fb, server_token) VALUES (\''+id_fb+'\',\''+server_token+'\')')
     };
     self.getUser = function() {
         return DB.query('SELECT * FROM '+table_name)

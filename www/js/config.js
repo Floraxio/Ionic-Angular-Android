@@ -9,7 +9,11 @@ angular.module('starter.config', [])
                 {name: 'name', type: 'text'},
                 {name: 'gender', type: 'text'},
                 {name: 'token', type: 'text'},
-                {name: 'scope_user', type: 'text'}
+                {name: 'server_token', type: 'text'},
+                {name: 'geolocation', type: 'text'},
+                {name: 'others', type: 'text'},
+                {name: 'psyco', type: 'text'},
+
             ]
         }
     ]
