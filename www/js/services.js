@@ -95,12 +95,18 @@ angular.module('starter.services', ['starter.config'])
         });
     };*/
     // add element
-    self.addUser = function(id_fb,name,gender,token, server_token) {
+    self.addUser = function(id_fb,name,gender,token) {
         self.id = id_fb;
-        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token,server_token) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\',\''+server_token+'\')')
+        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\')')
     };
     self.updateTokenServer = function(id_fb,server_token) {
-        return DB.query('UPDATE '+table_name+' SET (id_fb, server_token) VALUES (\''+id_fb+'\',\''+server_token+'\')')
+        return DB.query('UPDATE '+table_name+' SET server_token=\''+server_token+'\' WHERE id_fb=\''+id_fb+'\'')
+    };
+    self.updateGeolocation = function(id_fb,geolocation) {
+        return DB.query('UPDATE '+table_name+' SET geolocation=\''+geolocation+'\' WHERE id_fb=\''+id_fb+'\'')
+    };
+    self.updateSettings = function(id_fb,settings) {
+        return DB.query('UPDATE '+table_name+' SET settings=\''+settings+'\' WHERE id_fb=\''+id_fb+'\'');
     };
     self.getUser = function() {
         return DB.query('SELECT * FROM '+table_name)

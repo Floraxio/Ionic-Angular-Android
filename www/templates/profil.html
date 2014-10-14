@@ -9,7 +9,6 @@
             <p>{{user.name}}<br>{{user.city}}</p>
         </div>
         <div class="item item-body">
-        	Votre photo Facebook ! <br>
             <img src="http://graph.facebook.com/{{user.id}}/picture?width=100&height=100"/>
         	<br>
         	Votre acroche : {{user.bio}}
@@ -19,7 +18,46 @@
         	Date naissance : {{user.birthday}}
             <br>
         </div>
-        
+        <div class="item">
+            Ma recherche : <br>
+            <div class="list">
+              <div class="item range range-positive">
+                <i class="icon ion-ionic"></i>
+                <input type="range" min="0" max="500" value="20" ng-model="range_distance" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance)">
+                {{range_distance}} Km
+              </div>
+            </div>
+            <li class="item item-toggle">
+               <i class="icon ion-woman"></i> Femmes 
+               <label class="toggle toggle-balanced">
+                 <input type="checkbox" ng-model="toogle_woman" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance)">
+                 <div class="track">
+                   <div class="handle"></div>
+                 </div>
+               </label>
+            </li>
+            <li class="item item-toggle">
+                <i class="icon ion-man"></i> Hommes
+               <label class="toggle toggle-balanced">
+                 <input type="checkbox" ng-model="toogle_man" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance)">
+                 <div class="track">
+                   <div class="handle"></div>
+                 </div>
+               </label>
+            </li>
+            <li class="item item-toggle">
+                <i class="icon ion-person"></i> Autres
+               <label class="toggle toggle-balanced">
+                 <input type="checkbox" ng-model="toogle_other" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance)">
+                 <div class="track">
+                   <div class="handle"></div>
+                 </div>
+               </label>
+            </li>
+        </div>
+        <div class="item">
+            cc
+        </div>
     </div>
 
   </ion-content>

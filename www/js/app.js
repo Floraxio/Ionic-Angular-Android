@@ -2,6 +2,7 @@
 var GLOBAL_URL = 'http://localhost:8080/api';
 var GLOBAL_SCOPE_FB = 'email,publish_actions,public_profile,user_about_me,user_friends,';
 var GLOBAL_SCOPE_FB_SEC = 'id,name,about,bio,birthday,email,favorite_athletes,favorite_teams,first_name,hometown,inspirational_people,installed';
+
 // Ionic Starter App
 
 // angular.module is a global place for creating, registering and retrieving Angular modules
@@ -53,7 +54,6 @@ angular.module('starter', ['ionic','starter.services', 'starter.controllers'])
         }
       }
     })
-
     .state('app.browse', {
       url: "/browse",
       views: {
@@ -86,6 +86,15 @@ angular.module('starter', ['ionic','starter.services', 'starter.controllers'])
         'menuContent' :{
           templateUrl: "templates/profil.html",
           controller: 'ProfileCtrl'
+        }
+      }
+    })
+    .state('app.profil_details', {
+      url: "/profil_details/:profile",
+      views: {
+        'menuContent' :{
+          templateUrl: "templates/profil_details.html",
+          controller: "UserDetailsCtrl"
         }
       }
     })

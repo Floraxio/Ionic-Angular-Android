@@ -6,6 +6,11 @@
     <h1>Proximity</h1>
     Your current position : {{location}}
     <br>
-    La list view : rien
+    <ion-list>
+	  <ion-item ng-repeat="profile in profiles" href="#/app/profil_details/{{profile.id}}">
+	    Hello, {{profile}}!
+	  </ion-item>
+	</ion-list>
+
   </ion-content>
 </ion-view>

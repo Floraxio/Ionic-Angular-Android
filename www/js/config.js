@@ -11,7 +11,7 @@ angular.module('starter.config', [])
                 {name: 'token', type: 'text'},
                 {name: 'server_token', type: 'text'},
                 {name: 'geolocation', type: 'text'},
-                {name: 'others', type: 'text'},
+                {name: 'settings', type: 'text'},
                 {name: 'psyco', type: 'text'},
 
             ]

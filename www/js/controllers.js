@@ -37,11 +37,11 @@ angular.module('starter.controllers', ['starter.services'])
                             //GLOBALS_VARS['user'] user;
                             var token = response.authResponse.token;
                                 // insert or update item
-                                /*Document.addUser(user.id,user.name,user.gender,token).then(function(documents){
+                                Document.addUser(user.id,user.name,user.gender,token).then(function(documents){
                                     $scope.documents = documents;
                                     console.log("addUser");
                                     console.log(documents);
-                                });*/
+                                });
                             console.log ("userfb conected");
                             console.log(user);
                         });
@@ -84,35 +84,7 @@ angular.module('starter.controllers', ['starter.services'])
       $scope.closeLogin();
     }, 1000);
   };
-////////////////////////////////
-    // SQL storage examples
-    //$scope.documents = [];
-    //$scope.document = null;
-    /*Document.countAll().then(function(documents){
-        $scope.documents = documents;
-        console.log("countAll");
-        console.log(documents);
-    });*/
-
-
-    /*Document.countAll().then(function(documents){
-        $scope.documents = documents;
-        console.log("countAll");
-        console.log(documents);
-    });*/
-    /*Document.all().then(function(documents){
-        $scope.documents = documents;
-        console.log(documents);
-    });*/
-    // Get one document, example with id = 2
-    /*Document.getById(0).then(function(document) {
-        $scope.document = document;
-    });*/
-///////////////////////////////////////
 })
-/*.controller('DocumentCtrl', function($scope, Document) {
-    
-})*/
 .controller('PlaylistsCtrl', function($scope) {
   $scope.playlists = [
     { title: 'Reggae', id: 1 },
@@ -123,8 +95,37 @@ angular.module('starter.controllers', ['starter.services'])
     { title: 'Cowbell', id: 6 }
   ];
 })
-.controller('ProfileCtrl', function($scope, $http) {
-  // request api with all infos
+.controller('ProfileCtrl', function($scope, $http, Document) {
+  
+  $scope.updateSettings = function(toogle_woman,toogle_man,toogle_other,range_distance){
+    $scope.toogle_woman = toogle_woman;
+    $scope.toogle_man = toogle_man;
+    $scope.toogle_other = toogle_other;
+    $scope.range_distance = range_distance;
+    var settings = {"toogle_woman":toogle_woman,"toogle_man":toogle_man,"toogle_other":toogle_other,"range_distance":range_distance};
+    Document.getUser().then(function(documents){
+      //console.log (documents);
+      Document.updateSettings(documents.id_fb,JSON.stringify(settings));
+    });
+  };
+  // on INIT, get settings
+  Document.getUser().then(function(documents){
+      var setting = JSON.parse(documents.settings);
+      // si setting ok
+      if (setting != null){
+        $scope.toogle_woman = setting.toogle_woman;
+        $scope.toogle_man = setting.toogle_man;
+        $scope.toogle_other = setting.toogle_other;
+        $scope.range_distance = setting.range_distance;
+      } else {
+        $scope.toogle_woman = true;
+        $scope.toogle_woman = true;
+        $scope.toogle_man = true;
+        $scope.toogle_other = true;
+        $scope.range_distance = 20;
+      }
+  });
+  // on init request api with all infos
     openFB.api({
         path: '/me',
         params: {fields: ''},
@@ -136,72 +137,82 @@ angular.module('starter.controllers', ['starter.services'])
                 $scope.user = user;
             });
             // set to SERVER NODE news (if needed timing)
-            console.log (user);
+            //console.log (user);
             //SEND user infos TO SERVER
-            /*
+            
             $http.post(GLOBAL_URL+'/user', {
               objectFB:user
             }).success(function(data, status, headers, config) {
               console.log("ok send user info to SERVER");
-              console.log ('data receive all ok');
-              //console.log (data);
+              console.log (data);
 
               // insert or update item User
-              Document.addUser(user.id,user.name,user.gender,token, data.server_token).then(function(documents){
-                  //$scope.documents = documents;
-                  console.log("addUser");
-                  console.log(documents);
-              });
-
-              // this callback will be called asynchronously
-              // when the response is available
-              //redirect to profil with update infos server
+              Document.updateTokenServer(user.id, data.server_token);
             }).error(function(data, status, headers, config) {
               console.log("problem avec PROFIL SERVER NodeJS");
               // called asynchronously if an error occurs
               // or server returns response with an error status.
             });
-            */
-            // HTTP NODE JS
         },
         error: function(error) {
             alert('Facebook error: ' + error.error_description);
         }
-    });
+    });//fin recup && send fb to server
 })
-.controller('SearchCtrl', function($scope, $http) {
+.controller('SearchCtrl', function($scope, $http, Document) {
+  $scope.profilDetailsView = function (profile){
+    console.log (profile);
+  };
     // search geoloc for proximity
     navigator.geolocation.getCurrentPosition(function(location){
       console.log ("ok geoloc");
       console.log (location);
-      /* Send to SERVER my POSITION */
-      $http.post(GLOBAL_URL+'/user/geolocation', {
-        
-        geolocation:location
-      }).success(function(data, status, headers, config) {
-        console.log("ok send user info to SERVER");
-        console.log ('data receive geoloc ! ');
-        console.log (data);
 
-        //$scope.location = data;
-        // insert or update item
-        /*Document.updateTokenServer(user.token, data.server_token).then(function(documents){
-            $scope.documents = documents;
-            console.log("updateToken");
-            console.log(documents);
-        });*/
+        // get user references
+        Document.getUser().then(function(documents_user){
+          var setting = JSON.parse(documents_user.settings);
+          //update geolocation
+          console.log (documents_user);
+          Document.updateGeolocation(documents_user.id_fb, JSON.stringify(location)).then(function(documents){
+              $scope.documents = documents;
+              console.log("updategeolocation");
+              console.log(documents);
+          });
+          // post to server news infos
 
-        // this callback will be called asynchronously
-        // when the response is available
-        //redirect to profil with update infos server
-      }).error(function(data, status, headers, config) {
-        console.log("problem avec PROFIL SERVER NodeJS");
-        // called asynchronously if an error occurs
-        // or server returns response with an error status.
-      });
+          /* Send to SERVER my POSITION with my serverkey */
+          $http.post(GLOBAL_URL+'/user/geolocation', {
+            server_token:documents_user.server_token,
+            geolocation:location
+          }).success(function(data, status, headers, config) {
+            console.log("ok send geolocation to SERVER");
+            console.log (data);
+            $scope.location = location;
+          }).error(function(data, status, headers, config) {
+            console.log("problem avec PROFIL SERVER NodeJS");
+          });
+
+          /* Get from SERVER list of user proximity */
+          $http.post(GLOBAL_URL+'/proximity', {
+            server_token:documents_user.server_token,
+            geolocation:location,
+            settings:setting
+          }).success(function(data, status, headers, config) {
+            console.log("ok get proximity to SERVER");
+            console.log (data);
+            $scope.profiles = data;
+            $scope.location = location;
+          }).error(function(data, status, headers, config) {
+            console.log("problem avec proximity SERVER NodeJS");
+          });
+        });
+      
     }, function(){
       console.log ("error GEOLOCALISATION !");
     });
+})
+.controller('UserDetailsCtrl', function($scope, $stateParams) {
+  console.log ($scope);
 })
 .controller('PlaylistCtrl', function($scope, $stateParams) {
 });
