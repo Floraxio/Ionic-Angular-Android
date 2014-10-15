@@ -16,8 +16,7 @@ angular.module('starter.services', ['starter.config'])
                 columns.push(column.name + ' ' + column.type);
             });
             
-            /* Drop user table */
-            //self.dropUser();
+            /* Drop tables for initialise */
             //init user table
             var query = 'CREATE TABLE IF NOT EXISTS ' + table.name + ' (' + columns.join(',') + ')';
             self.query(query);
@@ -63,9 +62,13 @@ angular.module('starter.services', ['starter.config'])
 })
 // Resource service example
 .factory('Document', function(DB) {
+    //var user = {};
     var table_name = 'user';
     var self = this;
-    
+    self.setUserFB = function (user_fb){
+        self.user_fb = user_fb;
+    }
+
     self.all = function() {
         return DB.query('SELECT * FROM '+table_name+'')
         .then(function(result){
@@ -79,10 +82,10 @@ angular.module('starter.services', ['starter.config'])
             return DB.fetch(result);
         });
     };
-    self.countAll = function() {
-        return DB.query('SELECT COUNT(*) FROM '+table_name+'')
+    self.countAll = function() { // SELECT COUNT(column_name) FROM table_name;
+        return DB.query('SELECT COUNT(id_fb) as ct FROM '+table_name+'')
         .then(function(result){
-            return DB.fetchAll(result);
+            return DB.fetch(result);
         });
     };
     // list tables in BDD
@@ -96,16 +99,21 @@ angular.module('starter.services', ['starter.config'])
     };*/
     // add element
     self.addUser = function(id_fb,name,gender,token) {
-        self.id = id_fb;
-        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\')')
+        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\')');
+    };
+    self.updateUser = function(id_fb,name,gender,token) {
+        return DB.query('UPDATE '+table_name+' SET name=\''+name+'\',gender=\''+gender+'\',token=\''+token+'\' WHERE id_fb=\''+id_fb+'\'');
     };
     self.updateTokenServer = function(id_fb,server_token) {
+        //self.user.server_token = server_token;
         return DB.query('UPDATE '+table_name+' SET server_token=\''+server_token+'\' WHERE id_fb=\''+id_fb+'\'')
     };
     self.updateGeolocation = function(id_fb,geolocation) {
+        //self.user.geolocation = geolocation;
         return DB.query('UPDATE '+table_name+' SET geolocation=\''+geolocation+'\' WHERE id_fb=\''+id_fb+'\'')
     };
     self.updateSettings = function(id_fb,settings) {
+        //self.user.settings = settings;
         return DB.query('UPDATE '+table_name+' SET settings=\''+settings+'\' WHERE id_fb=\''+id_fb+'\'');
     };
     self.getUser = function() {
@@ -114,5 +122,28 @@ angular.module('starter.services', ['starter.config'])
             return DB.fetch(result);
         });
     };
+    return self;
+})
+// view templates vars
+.factory('Globals', function(Document) {
+    var self = this;
+    /* OBJECT USER FB */
+    var user_fb = {};
+    /* TEMPLATES VARS ARRAY */
+    var template_vars = [];
+
+    self.setUser_fb = function (user_fb){
+        self.user_fb = user_fb;
+    }
+
+    
+    self.setVar = function(id,value) {
+        self.template_vars.push(id,value);
+    };
+    self.getVar = function(id) {
+
+        self.template_vars.push(id,value);
+    };
+    
     return self;
 });

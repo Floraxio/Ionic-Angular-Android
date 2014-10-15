@@ -31,36 +31,29 @@ angular.module('starter.controllers', ['starter.services'])
                     path: '/me',
                     params: {fields: 'id,name,birthday,gender,about,is_verified'},
                     success: function(user) { // set
-                      // global app assign user
+                      var token = response.authResponse.token;
+                        /* Apply scope && local app first */
                         $scope.$apply(function() {
-                            $scope.user = user;
-                            //GLOBALS_VARS['user'] user;
-                            var token = response.authResponse.token;
-                                // insert or update item
-                                Document.addUser(user.id,user.name,user.gender,token).then(function(documents){
-                                    $scope.documents = documents;
-                                    console.log("addUser");
-                                    console.log(documents);
-                                });
+                            $scope.user_fb = user;
                             console.log ("userfb conected");
                             console.log(user);
                         });
-                        /*
-                        //SEND FIRST INFOS Conect infos TO SERVER && update sql
-                        $http.post(GLOBAL_URL+'/user', {                            id:user.id,
-                          name:user.name,
-                          gender:user.gender
+                        /* On sucess fb me: SEND infos TO SERVER && update sql with token*/
+                        $http.post(GLOBAL_URL+'/user', {
+                          objectFB:user,
                         }).success(function(data, status, headers, config) {
-                          console.log("ok SERVER");
-                          // this callback will be called asynchronously
-                          // when the response is available
-                          //redirect to profil with update infos server
+                          // success SERVER
+                          console.log("LOGIN ok SERVER, update token..");
+                          console.log(data);
+                          console.log (user.id, data.server_token);
+
+                          /* add user UNIQUE HERE && finally update token server */
+                          Document.addUser(user.id,user.name,user.gender,token);
+                          Document.updateTokenServer(user.id, data.server_token);
+
                         }).error(function(data, status, headers, config) {
-                          console.log("problem avec SERVER NodeJS");
-                          // called asynchronously if an error occurs
-                          // or server returns response with an error status.
+                          console.log("problem LOGIN avec SERVER NodeJS");
                         });
-                        */
                     },
                     error: function(error) {
                         alert('Facebook error: ' + error.error_description);
@@ -110,22 +103,21 @@ angular.module('starter.controllers', ['starter.services'])
   };
   // on INIT, get settings
   Document.getUser().then(function(documents){
-      var setting = JSON.parse(documents.settings);
-      // si setting ok
-      if (setting != null){
-        $scope.toogle_woman = setting.toogle_woman;
-        $scope.toogle_man = setting.toogle_man;
-        $scope.toogle_other = setting.toogle_other;
-        $scope.range_distance = setting.range_distance;
-      } else {
-        $scope.toogle_woman = true;
-        $scope.toogle_woman = true;
-        $scope.toogle_man = true;
-        $scope.toogle_other = true;
-        $scope.range_distance = 20;
-      }
-  });
-  // on init request api with all infos
+    var setting = JSON.parse(documents.settings);
+    // si setting ok
+    if (setting != null){
+      $scope.toogle_woman = setting.toogle_woman;
+      $scope.toogle_man = setting.toogle_man;
+      $scope.toogle_other = setting.toogle_other;
+      $scope.range_distance = setting.range_distance;
+    } else {
+      $scope.toogle_woman = true;
+      $scope.toogle_woman = true;
+      $scope.toogle_man = true;
+      $scope.toogle_other = true;
+      $scope.range_distance = 20;
+    }
+    // on init request api with all infos
     openFB.api({
         path: '/me',
         params: {fields: ''},
@@ -139,15 +131,16 @@ angular.module('starter.controllers', ['starter.services'])
             // set to SERVER NODE news (if needed timing)
             //console.log (user);
             //SEND user infos TO SERVER
-            
             $http.post(GLOBAL_URL+'/user', {
-              objectFB:user
+              objectFB:user,
+              server_token:documents.server_token,
             }).success(function(data, status, headers, config) {
               console.log("ok send user info to SERVER");
               console.log (data);
 
-              // insert or update item User
+              // update token server
               Document.updateTokenServer(user.id, data.server_token);
+            
             }).error(function(data, status, headers, config) {
               console.log("problem avec PROFIL SERVER NodeJS");
               // called asynchronously if an error occurs
@@ -158,6 +151,7 @@ angular.module('starter.controllers', ['starter.services'])
             alert('Facebook error: ' + error.error_description);
         }
     });//fin recup && send fb to server
+  });
 })
 .controller('SearchCtrl', function($scope, $http, Document) {
   $scope.profilDetailsView = function (profile){
@@ -212,7 +206,7 @@ angular.module('starter.controllers', ['starter.services'])
     });
 })
 .controller('UserDetailsCtrl', function($scope, $stateParams) {
-  console.log ($scope);
+  console.log ($stateParams.profile);
 })
 .controller('PlaylistCtrl', function($scope, $stateParams) {
 });
