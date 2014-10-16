@@ -71,6 +71,24 @@ angular.module('starter', ['ionic','starter.services', 'starter.controllers'])
         }
       }
     })
+    .state('app.messages', {
+      url: "/messages",
+      views: {
+        'menuContent' :{
+          templateUrl: "templates/messages.html",
+          controller: 'MessagesCtrl'
+        }
+      }
+    })
+    .state('app.message', {
+      url: "/message/:id_receiver",
+      views: {
+        'menuContent' :{
+          templateUrl: "templates/message.html",
+          controller: 'MessageCtrl'
+        }
+      }
+    })
     .state('app.acceuil', {
       url: "/acceuil",
       views: {
@@ -93,7 +111,7 @@ angular.module('starter', ['ionic','starter.services', 'starter.controllers'])
       url: "/profil_details/:profile",
       views: {
         'menuContent' :{
-          templateUrl: "templates/profil_details.html",
+          templateUrl: "templates/user_details.html",
           controller: "UserDetailsCtrl"
         }
       }

@@ -241,8 +241,82 @@ angular.module('starter.controllers', ['starter.services'])
       console.log ("error GEOLOCALISATION !");
     });
 })
-.controller('UserDetailsCtrl', function($scope, $stateParams) {
+.controller('MessagesCtrl', function($scope, $stateParams, $http, Document) {
+  console.log ($stateParams.id_receiver);
+  //$scope.id_receiver = $stateParams.id_receiver;
+})
+.controller('MessageCtrl', function($scope, $stateParams, $http, Document) {
+  $scope.id_receiver = $stateParams.id_receiver;
+
+  $scope.sendMessage = function(text_message){
+    if (text_message.lenght == 0){
+      alert ("remplir le message !");
+      return false;
+    }
+    // recup filed && send info to server
+    console.log (text_message);
+
+    Document.getUser().then(function(documents){
+      // set messages to server 
+      $http.post(GLOBAL_URL+'/messages', {
+        server_token:documents.server_token,
+        message: text_message,
+        id_receiver: $stateParams.id_receiver
+      }).success(function(data, status, headers, config) {
+        console.log("ok set messages to SERVER");
+        console.log (data);
+        $scope.messages = data.result;
+        // assign messages or text
+      }).error(function(data, status, headers, config) {
+        console.log("problem avec set messages SERVER NodeJS");
+      });
+    });
+
+  };
+
+  
+  console.log ($stateParams);
+  // init get local user
+  Document.getUser().then(function(documents){
+    console.log ('getuser');
+    console.log (documents);
+    // get messages to server 
+    $http.get(GLOBAL_URL+'/messages/'+documents.server_token+'/'+$stateParams.id_receiver, {
+      //server_token:,
+    }).success(function(data, status, headers, config) {
+      console.log("ok get messages to SERVER");
+      console.log (data);
+      $scope.messages = data.result;
+      // assign messages or text
+      if (data.result != null){
+        console.log ("messages a afficher");
+      }else {
+
+        $scope.message = "Prenez les devant, écrivez lui !";
+      }
+    }).error(function(data, status, headers, config) {
+      console.log("problem avec get messages SERVER NodeJS");
+    });
+  });
+})
+.controller('UserDetailsCtrl', function($scope, $stateParams, $http, Document) {
+
   console.log ($stateParams.profile);
+  // init get local user
+  Document.getUser().then(function(documents){
+    console.log ('getuser');
+    console.log (documents);
+    // get details profil to server 
+    $http.get(GLOBAL_URL+'/user/'+$stateParams.profile+'/'+documents.server_token, {
+      //server_token:,
+    }).success(function(data, status, headers, config) {
+      console.log("ok get details user to SERVER");
+      console.log (data);
+      $scope.profile = data.result;
+    }).error(function(data, status, headers, config) {
+      console.log("problem avec get details user SERVER NodeJS");
+    });
+  });
 })
 .controller('PlaylistCtrl', function($scope, $stateParams) {
 });

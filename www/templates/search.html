@@ -7,10 +7,13 @@
     Your current position : {{location}}
     <br>
     <ion-list>
-	  <ion-item ng-repeat="profile in profiles" href="#/app/profil_details/{{profile.id}}">
-	  	<!--<img src="http://graph.facebook.com/{{profile.id}}/picture?width=100&height=100"/>-->
-	    <br>
-	    Hello, {{profile}}!
+	  <ion-item ng-repeat="profile in profiles" href="#/app/profil_details/{{profile.id_fb}}">
+	  	<div style="float:left;">
+        <img src="http://graph.facebook.com/{{profile.id_fb}}/picture?width=50&height=50"/>
+	    </div>
+      <div>
+	     Hello, {{profile}}!
+      </div>
 	  </ion-item>
 	</ion-list>
 
