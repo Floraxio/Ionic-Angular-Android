@@ -96,7 +96,7 @@ angular.module('starter.controllers', ['starter.services'])
     $scope.range_distance = range_distance;
     $scope.range_age_min = range_age_min;
     $scope.range_age_max = range_age_max;
-    /* fomat setting with values */
+    /* fomat var setting for store */
     var settings = {"toogle_woman":toogle_woman,"toogle_man":toogle_man,"toogle_other":toogle_other,"range_distance":range_distance,"range_age_min":range_age_min,"range_age_max":range_age_max};
     //get user update
     Document.getUser().then(function(documents){

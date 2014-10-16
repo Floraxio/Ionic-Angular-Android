@@ -55,7 +55,8 @@ angular.module('starter.services', ['starter.config'])
     var self = this;
     // add element
     self.addUser = function(id_fb,name,gender,token) {
-        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\')');
+        var settings = {"toogle_woman":true,"toogle_man":true,"toogle_other":true,"range_distance":25,"range_age_min":18,"range_age_max":100};
+        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token,settings) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\',\''+JSON.stringify(settings)+'\')');
     };
     /* update user */
     self.updateUser = function(id_fb,name,gender,token) {
