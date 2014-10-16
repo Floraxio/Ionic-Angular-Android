@@ -10,12 +10,10 @@
     </ion-list>
     <ion-list>
       <ion-item ng-repeat="message in messages">
+        <img src="http://graph.facebook.com/{{message.id_fb_send}}/picture?width=100&height=100"/>
         {{message}}
       </ion-item>
     </ion-list>
-    
-
-
       <div class="list">
         <div class="item item-input-inset">
           <label class="item-input-wrapper">

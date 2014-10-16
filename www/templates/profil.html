@@ -30,7 +30,7 @@
             <li class="item item-toggle">
                <i class="icon ion-woman"></i> Femmes 
                <label class="toggle toggle-balanced">
-                 <input type="checkbox" ng-model="toogle_woman" ng-mouseup="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
+                 <input type="checkbox" ng-model="toogle_woman" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
                  <div class="track">
                    <div class="handle"></div>
                  </div>
@@ -39,7 +39,7 @@
             <li class="item item-toggle">
                 <i class="icon ion-man"></i> Hommes
                <label class="toggle toggle-balanced">
-                 <input type="checkbox" ng-model="toogle_man" ng-mouseup="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
+                 <input type="checkbox" ng-model="toogle_man" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
                  <div class="track">
                    <div class="handle"></div>
                  </div>
@@ -48,7 +48,7 @@
             <li class="item item-toggle">
                 <i class="icon ion-person"></i> Autres
                <label class="toggle toggle-balanced">
-                 <input type="checkbox" ng-model="toogle_other" ng-mouseup="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
+                 <input type="checkbox" ng-model="toogle_other" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
                  <div class="track">
                    <div class="handle"></div>
                  </div>

@@ -53,29 +53,6 @@ angular.module('starter.services', ['starter.config'])
     //var user = {};
     var table_name = 'user';
     var self = this;
-    self.setUserFB = function (user_fb){
-        self.user_fb = user_fb;
-    }
-
-    self.all = function() {
-        return DB.query('SELECT * FROM '+table_name+'')
-        .then(function(result){
-            return DB.fetchAll(result);
-        });
-    };
-    
-    self.getById = function(id) {
-        return DB.query('SELECT * FROM '+table_name+' WHERE id = ?', [id])
-        .then(function(result){
-            return DB.fetch(result);
-        });
-    };
-    self.countAll = function() { // SELECT COUNT(column_name) FROM table_name;
-        return DB.query('SELECT COUNT(id_fb) as ct FROM '+table_name+'')
-        .then(function(result){
-            return DB.fetch(result);
-        });
-    };
     // add element
     self.addUser = function(id_fb,name,gender,token) {
         return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\')');
@@ -108,7 +85,7 @@ angular.module('starter.services', ['starter.config'])
     };
     return self;
 })
-// view templates vars
+// view templates vars // unused //
 .factory('Globals', function(DB, Document) {
     var self = this;
 

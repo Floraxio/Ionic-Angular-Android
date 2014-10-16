@@ -1,6 +1,6 @@
 angular.module('starter.controllers', ['starter.services'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, Document, Globals) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, Document) {
   // Form data for the login modal
   $scope.loginData = {};
 
@@ -50,7 +50,6 @@ angular.module('starter.controllers', ['starter.services'])
                           /* add user UNIQUE HERE && finally update token server */
                           Document.addUser(user.id,user.name,user.gender,token);
                           Document.updateTokenServer(user.id, data.server_token);
-                          console.log (Globals.settings);
 
                         }).error(function(data, status, headers, config) {
                           console.log("problem LOGIN avec SERVER NodeJS");
@@ -90,8 +89,6 @@ angular.module('starter.controllers', ['starter.services'])
   ];
 })
 .controller('ProfileCtrl', function($scope, $http, Document) {
-  //range_age_min
-  //range_age_max
   $scope.updateSettings = function(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max){
     $scope.toogle_woman = toogle_woman;
     $scope.toogle_man = toogle_man;
@@ -99,10 +96,9 @@ angular.module('starter.controllers', ['starter.services'])
     $scope.range_distance = range_distance;
     $scope.range_age_min = range_age_min;
     $scope.range_age_max = range_age_max;
-
     /* fomat setting with values */
     var settings = {"toogle_woman":toogle_woman,"toogle_man":toogle_man,"toogle_other":toogle_other,"range_distance":range_distance,"range_age_min":range_age_min,"range_age_max":range_age_max};
-
+    //get user update
     Document.getUser().then(function(documents){
       /* Update setting in phone */
       Document.updateSettings(documents.id_fb,JSON.stringify(settings));
@@ -241,10 +237,30 @@ angular.module('starter.controllers', ['starter.services'])
       console.log ("error GEOLOCALISATION !");
     });
 })
+/* MULTI PAGE MESSAGE */
 .controller('MessagesCtrl', function($scope, $stateParams, $http, Document) {
-  console.log ($stateParams.id_receiver);
+  console.log ($stateParams);
   //$scope.id_receiver = $stateParams.id_receiver;
+  // init: first get server message ever sended
+  Document.getUser().then(function(documents){
+    // set messages to server 
+    $http.get(GLOBAL_URL+'/messages/'+documents.server_token, {
+      server_token:documents.server_token,
+    }).success(function(data, status, headers, config) {
+      console.log("ok set messages to SERVER");
+      console.log (data);
+      $scope.messages = data.result;
+      // assign messages or text
+    }).error(function(data, status, headers, config) {
+      console.log("problem avec set messages SERVER NodeJS");
+    });
+  });
+
+
+
+
 })
+/* UNIQUE PAGE MESSAGE */
 .controller('MessageCtrl', function($scope, $stateParams, $http, Document) {
   $scope.id_receiver = $stateParams.id_receiver;
 
