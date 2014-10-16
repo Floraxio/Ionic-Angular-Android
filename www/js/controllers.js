@@ -1,6 +1,6 @@
 angular.module('starter.controllers', ['starter.services'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, Document) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, Document, Globals) {
   // Form data for the login modal
   $scope.loginData = {};
 
@@ -30,7 +30,7 @@ angular.module('starter.controllers', ['starter.services'])
                   openFB.api({ // get api facebook
                     path: '/me',
                     params: {fields: 'id,name,birthday,gender,about,is_verified'},
-                    success: function(user) { // set
+                    success: function(user) { // set OK LOGIN FB !!!
                       var token = response.authResponse.token;
                         /* Apply scope && local app first */
                         $scope.$apply(function() {
@@ -50,6 +50,7 @@ angular.module('starter.controllers', ['starter.services'])
                           /* add user UNIQUE HERE && finally update token server */
                           Document.addUser(user.id,user.name,user.gender,token);
                           Document.updateTokenServer(user.id, data.server_token);
+                          console.log (Globals.settings);
 
                         }).error(function(data, status, headers, config) {
                           console.log("problem LOGIN avec SERVER NodeJS");
@@ -59,7 +60,7 @@ angular.module('starter.controllers', ['starter.services'])
                         alert('Facebook error: ' + error.error_description);
                     }
                   });
-                alert ("Vous etes connecte avec Facebook ! Veuillez noter que FB est la seule plateforme de conection ici (API-V2) !");
+                alert ("Vous etes connecte avec Facebook ! (API-V2) Albulms && infos ! ");
               } else {
                   alert('Facebook login failed');
               }
@@ -89,20 +90,42 @@ angular.module('starter.controllers', ['starter.services'])
   ];
 })
 .controller('ProfileCtrl', function($scope, $http, Document) {
-  
-  $scope.updateSettings = function(toogle_woman,toogle_man,toogle_other,range_distance){
+  //range_age_min
+  //range_age_max
+  $scope.updateSettings = function(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max){
     $scope.toogle_woman = toogle_woman;
     $scope.toogle_man = toogle_man;
     $scope.toogle_other = toogle_other;
     $scope.range_distance = range_distance;
-    var settings = {"toogle_woman":toogle_woman,"toogle_man":toogle_man,"toogle_other":toogle_other,"range_distance":range_distance};
+    $scope.range_age_min = range_age_min;
+    $scope.range_age_max = range_age_max;
+
+    /* fomat setting with values */
+    var settings = {"toogle_woman":toogle_woman,"toogle_man":toogle_man,"toogle_other":toogle_other,"range_distance":range_distance,"range_age_min":range_age_min,"range_age_max":range_age_max};
+
     Document.getUser().then(function(documents){
-      //console.log (documents);
+      /* Update setting in phone */
       Document.updateSettings(documents.id_fb,JSON.stringify(settings));
+      
+        // Update setting profile on node js server
+        $http.post(GLOBAL_URL+'/user/settings', {
+          settings:settings,
+          server_token:documents.server_token,
+        }).success(function(data, status, headers, config) {
+          console.log("ok send settings info to SERVER");
+          console.log (data);
+          // update token server in phone
+          Document.updateTokenServer(documents.id, data.server_token);
+        }).error(function(data, status, headers, config) {
+          console.log("problem avec settings SERVER NodeJS");
+        });
+      
     });
   };
-  // on INIT, get settings
+  // on INIT, get User && settings
   Document.getUser().then(function(documents){
+    console.log ('documents');
+    console.log (documents);
     var setting = JSON.parse(documents.settings);
     // si setting ok
     if (setting != null){
@@ -110,12 +133,24 @@ angular.module('starter.controllers', ['starter.services'])
       $scope.toogle_man = setting.toogle_man;
       $scope.toogle_other = setting.toogle_other;
       $scope.range_distance = setting.range_distance;
+      $scope.range_age_min = setting.range_age_min;
+      $scope.range_age_max = setting.range_age_max;
     } else {
       $scope.toogle_woman = true;
       $scope.toogle_woman = true;
       $scope.toogle_man = true;
       $scope.toogle_other = true;
       $scope.range_distance = 20;
+      $scope.range_age_min = 18;
+      $scope.range_age_max = 100;
+      // init settings for first http
+      setting = {};
+      setting.toogle_woman = true;
+      setting.toogle_man = true;
+      setting.toogle_other = true;
+      setting.range_distance = 20;
+      setting.range_age_min = 18;
+      setting.range_age_max = 100;
     }
     // on init request api with all infos
     openFB.api({
@@ -132,6 +167,7 @@ angular.module('starter.controllers', ['starter.services'])
             //console.log (user);
             //SEND user infos TO SERVER
             $http.post(GLOBAL_URL+'/user', {
+              settings:setting,
               objectFB:user,
               server_token:documents.server_token,
             }).success(function(data, status, headers, config) {

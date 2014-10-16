@@ -23,14 +23,14 @@
             <div class="list">
               <div class="item range range-positive">
                 <i class="icon ion-ionic"></i>
-                <input type="range" min="0" max="500" value="20" ng-model="range_distance" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance)">
+                <input type="range" min="0" max="500" value="20" ng-model="range_distance" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
                 {{range_distance}} Km
               </div>
             </div>
             <li class="item item-toggle">
                <i class="icon ion-woman"></i> Femmes 
                <label class="toggle toggle-balanced">
-                 <input type="checkbox" ng-model="toogle_woman" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance)">
+                 <input type="checkbox" ng-model="toogle_woman" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
                  <div class="track">
                    <div class="handle"></div>
                  </div>
@@ -39,7 +39,7 @@
             <li class="item item-toggle">
                 <i class="icon ion-man"></i> Hommes
                <label class="toggle toggle-balanced">
-                 <input type="checkbox" ng-model="toogle_man" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance)">
+                 <input type="checkbox" ng-model="toogle_man" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
                  <div class="track">
                    <div class="handle"></div>
                  </div>
@@ -48,12 +48,27 @@
             <li class="item item-toggle">
                 <i class="icon ion-person"></i> Autres
                <label class="toggle toggle-balanced">
-                 <input type="checkbox" ng-model="toogle_other" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance)">
+                 <input type="checkbox" ng-model="toogle_other" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
                  <div class="track">
                    <div class="handle"></div>
                  </div>
                </label>
             </li>
+        </div>
+        <div class="list">
+          <!-- age min -->
+          <div class="item range range-positive">
+            Age min : 
+            <input type="range" min="18" max="100" value="{{range_age_min}}" ng-model="range_age_min" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
+            {{range_age_min}} Ans
+          </div>
+          <!-- age max -->
+          <div class="item range range-positive">
+            <br>
+            Age max : 
+            <input type="range" min="18" max="100" value="20" ng-model="range_age_max" ng-change="updateSettings(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max)">
+            {{range_age_max}} Ans
+          </div>
         </div>
         <div class="item">
             cc
