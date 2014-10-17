@@ -44,7 +44,14 @@ angular.module('starter.services', ['starter.config'])
         return output;
     };
     self.fetch = function(result) {
-        return result.rows.item(0);
+        console.log ("fetch");
+        console.log (result);
+        if (result.rows.length>0){
+            return result.rows.item(0);    
+        } else {
+            return false;
+        }
+        
     };
     return self;
 })
@@ -55,8 +62,24 @@ angular.module('starter.services', ['starter.config'])
     var self = this;
     // add element
     self.addUser = function(id_fb,name,gender,token) {
-        var settings = {"toogle_woman":true,"toogle_man":true,"toogle_other":true,"range_distance":25,"range_age_min":18,"range_age_max":100};
-        return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token,settings) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\',\''+JSON.stringify(settings)+'\')');
+        
+        self.getUser().then(function(documents){
+            console.log ('result');
+            console.log (documents);
+            //initialisation
+            if (documents == false){
+                var settings = {"toogle_woman":true,"toogle_man":true,"toogle_other":true,"range_distance":25,"range_age_min":18,"range_age_max":100};
+                return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token,settings) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\',\''+JSON.stringify(settings)+'\')');
+            }else {
+                //update
+                self.updateUser(id_fb,name,gender,token);
+            }
+        });
+        
+        
+
+        //var settings = {"toogle_woman":true,"toogle_man":true,"toogle_other":true,"range_distance":25,"range_age_min":18,"range_age_max":100};
+        //return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token,settings) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\',\''+JSON.stringify(settings)+'\')');
     };
     /* update user */
     self.updateUser = function(id_fb,name,gender,token) {
@@ -86,37 +109,65 @@ angular.module('starter.services', ['starter.config'])
     };
     return self;
 })
-// view templates vars // unused //
-.factory('Globals', function(DB, Document) {
+.factory('SERVER_HTTP', function($http, DB, Document) {
     var self = this;
-
-    var settings = {"toogle_woman":true,"toogle_man":true,"toogle_other":true,"range_distance":20};
-
-    /* init config settings */
-    self.addDefaultsSettings = function(id_fb) {
-        return DB.query('UPDATE user SET settings=\''+settings+'\' WHERE id_fb=\''+id_fb+'\'');
-    };
-    self.getDefaultsSettings = function() {
-        return self.settings;
-    };
-    /// OTER NOT TESTED //
-    /* OBJECT USER FB */
-    var user_fb = {};
-    /* TEMPLATES VARS ARRAY */
-    var template_vars = [];
-
-    self.setUser_fb = function (user_fb){
-        self.user_fb = user_fb;
-    }
-
     
-    self.setVar = function(id,value) {
-        self.template_vars.push(id,value);
-    };
-    self.getVar = function(id) {
+    self.login = function(user){
+       /* On sucess fb me: SEND infos TO SERVER && update sql with token*/
+        $http.post(GLOBAL_URL+'/user', {
+          objectFB:user,
+        }).success(function(data, status, headers, config) {
+          // success SERVER
+          console.log("LOGIN ok SERVER, update token..");
+          console.log(data);
+          console.log (user.id, data.server_token);
 
-        self.template_vars.push(id,value);
+          /* add user UNIQUE HERE && finally update token server */
+          Document.addUser(user.id,user.name,user.gender,token);
+          Document.updateTokenServer(user.id, data.server_token);
+
+        }).error(function(data, status, headers, config) {
+          console.log("problem LOGIN avec SERVER NodeJS");
+        });
     };
-    
+    self.sendMessage = function(id_receiver,message){
+        Document.getUser().then(function(documents){
+          // set messages to server 
+          $http.post(GLOBAL_URL+'/messages', {
+            server_token:documents.server_token,
+            message: message,
+            id_receiver: id_receiver
+          }).success(function(data, status, headers, config) {
+            console.log("ok set messages to SERVER");
+            console.log (data);
+            return data.result;
+            //$scope.messages = data.result;
+            // assign messages or text
+          }).error(function(data, status, headers, config) {
+            console.log("problem avec set messages SERVER NodeJS");
+            return false;
+          });
+        });
+    };
+    self.sendSettings = function(settings){
+        Document.getUser().then(function(documents){
+          // set messages to server 
+          $http.post(GLOBAL_URL+'/messages', {
+            server_token:documents.server_token,
+            settings:settings,
+            server_token:documents.server_token
+          }).success(function(data, status, headers, config) {
+            console.log("ok set messages to SERVER");
+            console.log (data);
+            return data.result;
+            //$scope.messages = data.result;
+            // assign messages or text
+          }).error(function(data, status, headers, config) {
+            console.log("problem avec set messages SERVER NodeJS");
+            return false;
+          });
+        });
+    };
+
     return self;
 });

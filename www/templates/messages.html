@@ -3,9 +3,9 @@
     <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
   </ion-nav-buttons>
   <ion-content class="has-header">
-  <center>Reactualiser..</center>
+  <center>No messages -- actualiser..</center>
     <ion-list>
-      <ion-item ng-repeat="message in messages" href="#/app/messages/{{message.id}}">
+      <ion-item ng-repeat="message in messages" href="#/app/message/{{message.id_fb_rec}}">
         {{message}}
       </ion-item>
     </ion-list>

@@ -1,6 +1,6 @@
 angular.module('starter.controllers', ['starter.services'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, Document) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, Document, SERVER_HTTP) {
   // Form data for the login modal
   $scope.loginData = {};
 
@@ -38,6 +38,8 @@ angular.module('starter.controllers', ['starter.services'])
                             console.log ("userfb conected");
                             console.log(user);
                         });
+                        //SERVER_HTTP.login(user);
+
                         /* On sucess fb me: SEND infos TO SERVER && update sql with token*/
                         $http.post(GLOBAL_URL+'/user', {
                           objectFB:user,
@@ -88,7 +90,7 @@ angular.module('starter.controllers', ['starter.services'])
     { title: 'Cowbell', id: 6 }
   ];
 })
-.controller('ProfileCtrl', function($scope, $http, Document) {
+.controller('ProfileCtrl', function($scope, $http, Document, SERVER_HTTP) {
   $scope.updateSettings = function(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max){
     $scope.toogle_woman = toogle_woman;
     $scope.toogle_man = toogle_man;
@@ -103,6 +105,12 @@ angular.module('starter.controllers', ['starter.services'])
       /* Update setting in phone */
       Document.updateSettings(documents.id_fb,JSON.stringify(settings));
       
+       // updae settings
+       //SERVER_HTTP.sendSettings(server_token,settings);
+       console.log ("houuuuuu");
+        SERVER_HTTP.sendSettings(settings, function(){
+          console.log ("send setting sucesss");
+        });
         // Update setting profile on node js server
         $http.post(GLOBAL_URL+'/user/settings', {
           settings:settings,
@@ -261,33 +269,23 @@ angular.module('starter.controllers', ['starter.services'])
 
 })
 /* UNIQUE PAGE MESSAGE */
-.controller('MessageCtrl', function($scope, $stateParams, $http, Document) {
+.controller('MessageCtrl', function($scope, $stateParams, $http, Document, SERVER_HTTP) {
   $scope.id_receiver = $stateParams.id_receiver;
 
-  $scope.sendMessage = function(text_message){
-    if (text_message.lenght == 0){
+  $scope.sendMessage = function(message){
+
+    if (message.lenght == 0){
       alert ("remplir le message !");
       return false;
     }
     // recup filed && send info to server
-    console.log (text_message);
+    console.log (message);
 
-    Document.getUser().then(function(documents){
-      // set messages to server 
-      $http.post(GLOBAL_URL+'/messages', {
-        server_token:documents.server_token,
-        message: text_message,
-        id_receiver: $stateParams.id_receiver
-      }).success(function(data, status, headers, config) {
-        console.log("ok set messages to SERVER");
-        console.log (data);
-        $scope.messages = data.result;
-        // assign messages or text
-      }).error(function(data, status, headers, config) {
-        console.log("problem avec set messages SERVER NodeJS");
-      });
+    SERVER_HTTP.sendMessage($stateParams.id_receiver,message, function(data){
+      console.log("message send ! ");
+      $scope.messages = data.result;
     });
-
+    //update message send with server //
   };
 
   
