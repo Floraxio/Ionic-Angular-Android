@@ -1,5 +1,7 @@
 
 var GLOBAL_URL = 'http://localhost:8080/api';
+var GLOBAL_URL = 'http://192.168.0.10:8080/api';
+
 var GLOBAL_SCOPE_FB = 'email,publish_actions,public_profile,user_about_me,user_friends,';
 var GLOBAL_SCOPE_FB_SEC = 'id,name,about,bio,birthday,email,favorite_athletes,favorite_teams,first_name,hometown,inspirational_people,installed';
 

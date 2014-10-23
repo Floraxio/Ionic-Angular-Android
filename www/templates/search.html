@@ -7,13 +7,23 @@
     Your current position : {{location}}
     <br>
     <ion-list>
-	  <ion-item ng-repeat="profile in profiles" href="#/app/profil_details/{{profile.id_fb}}">
-	  	<div style="float:left;">
+	  <ion-item ng-repeat="profile in profiles">
+	  	<a class="item item-avatar" href="#/app/profil_details/{{profile.id_fb}}">
+        <img src="http://graph.facebook.com/{{profile.id_fb}}/picture?width=50&height=50"/>
+        <div class="float_left"><h2>{{profile.name}}</h2></div>
+        <div class="align_right">distance</div>
+        <p>{{profile.bio}}</p>
+      </a>
+
+
+<!--
+      <div style="float:left;">
         <img src="http://graph.facebook.com/{{profile.id_fb}}/picture?width=50&height=50"/>
 	    </div>
       <div>
 	     Hello, {{profile}}!
       </div>
+    -->
 	  </ion-item>
 	</ion-list>
 

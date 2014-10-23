@@ -6,6 +6,7 @@
   <center>No messages -- actualiser..</center>
     <ion-list>
       <ion-item ng-repeat="message in messages" href="#/app/message/{{message.id_fb_rec}}">
+      <img src="http://graph.facebook.com/{{message.id_fb_rec}}/picture?width=100&height=100"/>
         {{message}}
       </ion-item>
     </ion-list>

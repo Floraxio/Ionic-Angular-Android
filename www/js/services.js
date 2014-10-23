@@ -44,8 +44,8 @@ angular.module('starter.services', ['starter.config'])
         return output;
     };
     self.fetch = function(result) {
-        console.log ("fetch");
-        console.log (result);
+        //console.log ("fetch");
+        //console.log (result);
         if (result.rows.length>0){
             return result.rows.item(0);    
         } else {
@@ -62,7 +62,6 @@ angular.module('starter.services', ['starter.config'])
     var self = this;
     // add element
     self.addUser = function(id_fb,name,gender,token) {
-        
         self.getUser().then(function(documents){
             console.log ('result');
             console.log (documents);
@@ -75,9 +74,6 @@ angular.module('starter.services', ['starter.config'])
                 self.updateUser(id_fb,name,gender,token);
             }
         });
-        
-        
-
         //var settings = {"toogle_woman":true,"toogle_man":true,"toogle_other":true,"range_distance":25,"range_age_min":18,"range_age_max":100};
         //return DB.query('REPLACE INTO '+table_name+' (id_fb,name,gender,token,settings) VALUES (\''+id_fb+'\',\''+name+'\',\''+gender+'\',\''+token+'\',\''+JSON.stringify(settings)+'\')');
     };
@@ -111,30 +107,29 @@ angular.module('starter.services', ['starter.config'])
 })
 .factory('SERVER_HTTP', function($http, DB, Document) {
     var self = this;
-    
+    var server_token = null;
     self.login = function(user){
        /* On sucess fb me: SEND infos TO SERVER && update sql with token*/
         $http.post(GLOBAL_URL+'/user', {
           objectFB:user,
         }).success(function(data, status, headers, config) {
+            self.server_token = data.server_token;
           // success SERVER
           console.log("LOGIN ok SERVER, update token..");
           console.log(data);
-          console.log (user.id, data.server_token);
-
           /* add user UNIQUE HERE && finally update token server */
           Document.addUser(user.id,user.name,user.gender,token);
-          Document.updateTokenServer(user.id, data.server_token);
+          Document.updateTokenServer(user.id, self.server_token);
 
         }).error(function(data, status, headers, config) {
           console.log("problem LOGIN avec SERVER NodeJS");
         });
     };
     self.sendMessage = function(id_receiver,message){
-        Document.getUser().then(function(documents){
+            
           // set messages to server 
           $http.post(GLOBAL_URL+'/messages', {
-            server_token:documents.server_token,
+            server_token: self.server_token,
             message: message,
             id_receiver: id_receiver
           }).success(function(data, status, headers, config) {
@@ -147,15 +142,14 @@ angular.module('starter.services', ['starter.config'])
             console.log("problem avec set messages SERVER NodeJS");
             return false;
           });
-        });
+        
     };
     self.sendSettings = function(settings){
-        Document.getUser().then(function(documents){
+        
           // set messages to server 
-          $http.post(GLOBAL_URL+'/messages', {
-            server_token:documents.server_token,
+          $http.post(GLOBAL_URL+'/user/settings', {
             settings:settings,
-            server_token:documents.server_token
+            server_token:self.server_token
           }).success(function(data, status, headers, config) {
             console.log("ok set messages to SERVER");
             console.log (data);
@@ -166,7 +160,7 @@ angular.module('starter.services', ['starter.config'])
             console.log("problem avec set messages SERVER NodeJS");
             return false;
           });
-        });
+        
     };
 
     return self;

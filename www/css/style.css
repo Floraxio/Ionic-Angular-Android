@@ -1,1 +1,9 @@
 /* Empty. Add your own CSS if you like */
+
+
+.float_left{
+	float: left;
+}
+.align_right{
+	text-align: right;
+}
