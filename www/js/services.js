@@ -1,4 +1,46 @@
 angular.module('starter.services', ['starter.config'])
+// POPUP MESSAGES
+.factory('POPUP', function($ionicPopup, $timeout) {
+  var self = this;
+  self.showAlert = function(title, message, callback){
+    var alertPopup = $ionicPopup.alert({
+         title: title,
+         template: message
+    });
+    alertPopup.then(function(res) {
+        console.log('callback popup');
+        if (callback){
+            callback();
+        }
+    });
+  };
+  return self;
+})
+// LOCAL STORAGE wrapper
+.factory('LOCAL_STORAGE', function() {
+  var self = this;
+  self.storage = window.localStorage;
+  self.prefix = '_';
+
+  self.setStorage = function(key_name, value) {
+    self.storage.setItem(self.prefix+key_name, JSON.stringify(value));
+  }
+  self.getStorage = function(key_name) {
+    return JSON.parse(self.storage.getItem(self.prefix+key_name));
+  }    
+  return self;
+})
+.factory('GEO', function(LOCAL_STORAGE) {
+  var self = this;
+
+  self.getCurrentPosition = function(callback) {
+    navigator.geolocation.getCurrentPosition(function(location){
+        LOCAL_STORAGE.setStorage('location',location);
+        callback(location);
+    });
+  };    
+  return self;
+})
 // DB wrapper
 .factory('DB', function($q, DB_CONFIG) {
     var self = this;
@@ -105,31 +147,78 @@ angular.module('starter.services', ['starter.config'])
     };
     return self;
 })
-.factory('SERVER_HTTP', function($http, DB, Document) {
+// USER
+.factory('USER', function(LOCAL_STORAGE, SERVER_HTTP) {
     var self = this;
-    var server_token = null;
-    self.login = function(user){
-       /* On sucess fb me: SEND infos TO SERVER && update sql with token*/
+    // global vars
+    self.user = LOCAL_STORAGE.getStorage('user');
+    self.settings = LOCAL_STORAGE.getStorage('settings');
+
+    self.updateProperty = function(prop, value){
+        self.user[prop] = value;
+        LOCAL_STORAGE.setStorage('user',self.user);
+    };
+    self.getUser = function(){
+        return self.user;
+    };
+    self.getSettings = function(){
+        return self.settings;
+    };
+    self.setSettings = function(settings){
+        self.settings = settings;
+        // send to server
+        SERVER_HTTP.sendSettings(settings, function(){
+            LOCAL_STORAGE.setStorage('settings',settings);
+        });
+    };
+    self.sendUserToServer = function(){
+        console.log ('self.user');
+        console.log (self.user);
+
+        SERVER_HTTP.sendUser(self.user, function(){
+            console.log("user sended");
+        });
+
+    };
+    return self;
+})
+// HTTP SERVICE
+.factory('SERVER_HTTP', function($http, POPUP, LOCAL_STORAGE, DB, Document) {
+    var self = this;
+    /*self.getMessages = function(){
+        // set messages to server 
+          $http.get(GLOBAL_URL+'/messages/'+LOCAL_STORAGE.getStorage('servtoken'))
+          .success(function(data, status, headers, config) {
+            console.log("ok get messages to SERVER");
+            console.log (data);
+            return data.result;
+            //$scope.messages = data.result;
+            // assign messages or text
+          }).error(function(data, status, headers, config) {
+            console.log("problem avec get messages SERVER NodeJS");
+                        POPUP.showAlert('Error !', 'Error with Server !');
+
+            return false;
+          });
+    };*/
+    self.sendUser = function(user, callback){
+        console.log ('send user htttp');
         $http.post(GLOBAL_URL+'/user', {
+          server_token: LOCAL_STORAGE.getStorage('servtoken'),
           objectFB:user,
         }).success(function(data, status, headers, config) {
-            self.server_token = data.server_token;
           // success SERVER
-          console.log("LOGIN ok SERVER, update token..");
-          console.log(data);
-          /* add user UNIQUE HERE && finally update token server */
-          Document.addUser(user.id,user.name,user.gender,token);
-          Document.updateTokenServer(user.id, self.server_token);
-
+          LOCAL_STORAGE.setStorage('servtoken',data.server_token);
+          callback(data.result);
         }).error(function(data, status, headers, config) {
-          console.log("problem LOGIN avec SERVER NodeJS");
+          console.log("problem send user SERVER NodeJS");
+            POPUP.showAlert('Error !', 'Error with Server !');
         });
     };
     self.sendMessage = function(id_receiver,message){
-            
           // set messages to server 
           $http.post(GLOBAL_URL+'/messages', {
-            server_token: self.server_token,
+            server_token: LOCAL_STORAGE.getStorage('servtoken'),
             message: message,
             id_receiver: id_receiver
           }).success(function(data, status, headers, config) {
@@ -140,28 +229,56 @@ angular.module('starter.services', ['starter.config'])
             // assign messages or text
           }).error(function(data, status, headers, config) {
             console.log("problem avec set messages SERVER NodeJS");
+            POPUP.showAlert('Error !', 'Error with Server !');
             return false;
           });
         
     };
-    self.sendSettings = function(settings){
-        
+    self.sendSettings = function(settings,callback){
           // set messages to server 
           $http.post(GLOBAL_URL+'/user/settings', {
             settings:settings,
-            server_token:self.server_token
+            server_token:LOCAL_STORAGE.getStorage('servtoken')
           }).success(function(data, status, headers, config) {
-            console.log("ok set messages to SERVER");
+            console.log("ok set settings to SERVER");
             console.log (data);
-            return data.result;
+            callback(data.result);
             //$scope.messages = data.result;
             // assign messages or text
           }).error(function(data, status, headers, config) {
-            console.log("problem avec set messages SERVER NodeJS");
+            console.log("problem avec set settings SERVER NodeJS");
+            POPUP.showAlert('Error !', 'Error with Server !');
             return false;
           });
         
     };
-
+    self.sendMyLocation = function(location){
+      /* Send to SERVER my POSITION with my serverkey */
+      $http.post(GLOBAL_URL+'/user/geolocation', {
+        server_token:LOCAL_STORAGE.getStorage('servtoken'),
+        geolocation:location
+      }).success(function(data, status, headers, config) {
+        console.log("ok send geolocation to SERVER");
+        console.log (data);
+      }).error(function(data, status, headers, config) {
+        console.log("problem avec send location SERVER NodeJS");
+        POPUP.showAlert('Error !', 'Error with Server !');
+      });
+    };
+    /*self.getProximityProfils = function(location,callback){
+        // Get from SERVER list of user proximity
+      $http.post(GLOBAL_URL+'/proximity', {
+        server_token:LOCAL_STORAGE.getStorage('servtoken'),
+        geolocation:location,
+        settings:setting
+      }).success(function(data, status, headers, config) {
+        console.log("ok get proximity to SERVER");
+        console.log (data);
+        //callback(data);
+      }).error(function(data, status, headers, config) {
+        console.log("problem avec proximity SERVER NodeJS");
+      });
+    };*/
     return self;
-});
+})
+;

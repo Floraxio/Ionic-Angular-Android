@@ -1,10 +1,14 @@
 
-var GLOBAL_URL = 'http://localhost:8080/api';
-var GLOBAL_URL = 'http://192.168.0.10:8080/api';
+//var context = window.location.pathname.substring(0, window.location.pathname.indexOf("/",2));
+//var GLOBAL_URL = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + context;
+//var GLOBAL_URL = 'http://localhost:8080/api';
+var GLOBAL_URL = 'http://192.168.0.14:8080/api';
+var GLOBAL_URL = 'http://127.0.0.1:8080/api';
 
-var GLOBAL_SCOPE_FB = 'email,publish_actions,public_profile,user_about_me,user_friends,';
+var GLOBAL_SCOPE_FB = 'email,user_likes,publish_actions,public_profile,user_friends,user_photos';
 var GLOBAL_SCOPE_FB_SEC = 'id,name,about,bio,birthday,email,favorite_athletes,favorite_teams,first_name,hometown,inspirational_people,installed';
 
+var GLOBAL_SCOPE_FB_ME = 'id,name,email,birthday,first_name,hometown,link,gender,about,is_verified,verified,bio';
 // Ionic Starter App
 
 // angular.module is a global place for creating, registering and retrieving Angular modules

@@ -1,6 +1,6 @@
 angular.module('starter.controllers', ['starter.services'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, Document, SERVER_HTTP) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout,$http, LOCAL_STORAGE, SERVER_HTTP) {
   // Form data for the login modal
   $scope.loginData = {};
 
@@ -26,33 +26,22 @@ angular.module('starter.controllers', ['starter.services'])
               if (response.status === 'connected') {
                   console.log('Facebook login succeeded');
                   console.log(response);
+                  // set fbtoken storage token
+                  LOCAL_STORAGE.setStorage('fbtoken',response.authResponse.token);
                   // ON LOGIN : set my facebook identity to server
                   openFB.api({ // get api facebook
                     path: '/me',
-                    params: {fields: 'id,name,birthday,gender,about,is_verified'},
+                    params: {fields: GLOBAL_SCOPE_FB_ME},
                     success: function(user) { // set OK LOGIN FB !!!
-                      var token = response.authResponse.token;
-                        /* Apply scope && local app first */
-                        $scope.$apply(function() {
-                            $scope.user_fb = user;
-                            console.log ("userfb conected");
-                            console.log(user);
-                        });
-                        //SERVER_HTTP.login(user);
-
-                        /* On sucess fb me: SEND infos TO SERVER && update sql with token*/
+                      console.log ('user return fb');
+                      console.log (user);
+                        // On sucess fb me: SEND infos TO SERVER && update sql with token
                         $http.post(GLOBAL_URL+'/user', {
                           objectFB:user,
                         }).success(function(data, status, headers, config) {
                           // success SERVER
-                          console.log("LOGIN ok SERVER, update token..");
-                          console.log(data);
-                          console.log (user.id, data.server_token);
-
-                          /* add user UNIQUE HERE && finally update token server */
-                          Document.addUser(user.id,user.name,user.gender,token);
-                          Document.updateTokenServer(user.id, data.server_token);
-
+                          LOCAL_STORAGE.setStorage('servtoken',data.server_token);
+                          LOCAL_STORAGE.setStorage('user',user);
                         }).error(function(data, status, headers, config) {
                           console.log("problem LOGIN avec SERVER NodeJS");
                         });
@@ -90,7 +79,18 @@ angular.module('starter.controllers', ['starter.services'])
     { title: 'Cowbell', id: 6 }
   ];
 })
-.controller('ProfileCtrl', function($scope, $http, Document, SERVER_HTTP) {
+.controller('ProfileCtrl', function($scope, $http, USER) {
+  $scope.sendAllInfosSettings = function(){
+    console.log ('sendAllInfosSettings');
+    USER.sendUserToServer();
+  };
+  $scope.updateDescription = function(desc){
+    console.log ("settingsSaves")
+    USER.updateProperty('description', desc);
+  };
+  $scope.updateBirthday = function(birthday){
+    USER.updateProperty('birthday', birthday);
+  };
   $scope.updateSettings = function(toogle_woman,toogle_man,toogle_other,range_distance,range_age_min,range_age_max){
     $scope.toogle_woman = toogle_woman;
     $scope.toogle_man = toogle_man;
@@ -100,159 +100,81 @@ angular.module('starter.controllers', ['starter.services'])
     $scope.range_age_max = range_age_max;
     /* fomat var setting for store */
     var settings = {"toogle_woman":toogle_woman,"toogle_man":toogle_man,"toogle_other":toogle_other,"range_distance":range_distance,"range_age_min":range_age_min,"range_age_max":range_age_max};
-    //get user update
-    Document.getUser().then(function(documents){
-      /* Update setting in phone */
-      Document.updateSettings(documents.id_fb,JSON.stringify(settings));
-      
-       // updae settings
-       //SERVER_HTTP.sendSettings(server_token,settings);
-       console.log ("houuuuuu");
-        SERVER_HTTP.sendSettings(settings, function(){
-          console.log ("send setting sucesss");
-        });
-        // Update setting profile on node js server
-        $http.post(GLOBAL_URL+'/user/settings', {
-          settings:settings,
-          server_token:documents.server_token,
-        }).success(function(data, status, headers, config) {
-          console.log("ok send settings info to SERVER");
-          console.log (data);
-          // update token server in phone
-          Document.updateTokenServer(documents.id, data.server_token);
-        }).error(function(data, status, headers, config) {
-          console.log("problem avec settings SERVER NodeJS");
-        });
-      
-    });
+    // updade settings
+    USER.setSettings(settings);
   };
-  // on INIT, get User && settings
-  Document.getUser().then(function(documents){
-    console.log ('documents');
-    console.log (documents);
-    var setting = JSON.parse(documents.settings);
-    // si setting ok
-    if (setting != null){
-      $scope.toogle_woman = setting.toogle_woman;
-      $scope.toogle_man = setting.toogle_man;
-      $scope.toogle_other = setting.toogle_other;
-      $scope.range_distance = setting.range_distance;
-      $scope.range_age_min = setting.range_age_min;
-      $scope.range_age_max = setting.range_age_max;
-    } else {
-      $scope.toogle_woman = true;
-      $scope.toogle_woman = true;
-      $scope.toogle_man = true;
-      $scope.toogle_other = true;
-      $scope.range_distance = 20;
-      $scope.range_age_min = 18;
-      $scope.range_age_max = 100;
-      // init settings for first http
-      setting = {};
-      setting.toogle_woman = true;
-      setting.toogle_man = true;
-      setting.toogle_other = true;
-      setting.range_distance = 20;
-      setting.range_age_min = 18;
-      setting.range_age_max = 100;
-    }
-    // on init request api with all infos
-    openFB.api({
-        path: '/me',
-        params: {fields: ''},
-        success: function(user) {
-          console.log ("ccccc");
-          console.log (user);
-            // set view user
-            $scope.$apply(function() {
-                $scope.user = user;
-            });
-            // set to SERVER NODE news (if needed timing)
-            //console.log (user);
-            //SEND user infos TO SERVER
-            $http.post(GLOBAL_URL+'/user', {
-              settings:setting,
-              objectFB:user,
-              server_token:documents.server_token,
-            }).success(function(data, status, headers, config) {
-              console.log("ok send user info to SERVER");
-              console.log (data);
 
-              // update token server
-              Document.updateTokenServer(user.id, data.server_token);
-            
-            }).error(function(data, status, headers, config) {
-              console.log("problem avec PROFIL SERVER NodeJS");
-              // called asynchronously if an error occurs
-              // or server returns response with an error status.
-            });
-        },
-        error: function(error) {
-            alert('Facebook error: ' + error.error_description);
-        }
-    });//fin recup && send fb to server
-  });
+  // on INIT, get User && settings
+  var user = USER.getUser(),
+      setting = USER.getSettings();
+      console.log (user);
+  $scope.user = user;
+
+  // si setting ok
+  if (setting != null){
+    $scope.toogle_woman = setting.toogle_woman;
+    $scope.toogle_man = setting.toogle_man;
+    $scope.toogle_other = setting.toogle_other;
+    $scope.range_distance = setting.range_distance;
+    $scope.range_age_min = setting.range_age_min;
+    $scope.range_age_max = setting.range_age_max;
+  } else {
+    $scope.toogle_woman = true;
+    $scope.toogle_woman = true;
+    $scope.toogle_man = true;
+    $scope.toogle_other = true;
+    $scope.range_distance = 20;
+    $scope.range_age_min = 18;
+    $scope.range_age_max = 100;
+    // init settings for first http
+    setting = {};
+    setting.toogle_woman = true;
+    setting.toogle_man = true;
+    setting.toogle_other = true;
+    setting.range_distance = 20;
+    setting.range_age_min = 18;
+    setting.range_age_max = 100;
+  }
 })
-.controller('SearchCtrl', function($scope, $http, Document) {
+.controller('SearchCtrl', function($scope, $http, GEO, LOCAL_STORAGE, SERVER_HTTP) {
   $scope.profilDetailsView = function (profile){
     console.log (profile);
   };
     // search geoloc for proximity
-    navigator.geolocation.getCurrentPosition(function(location){
+    GEO.getCurrentPosition(function(location){
       console.log ("ok geoloc");
       console.log (location);
 
         // get user references
-        Document.getUser().then(function(documents_user){
-          var setting = JSON.parse(documents_user.settings);
-          //update geolocation
-          console.log (documents_user);
-          Document.updateGeolocation(documents_user.id_fb, JSON.stringify(location)).then(function(documents){
-              $scope.documents = documents;
-              console.log("updategeolocation");
-              console.log(documents);
-          });
-          // post to server news infos
+        var documents_user = LOCAL_STORAGE.getStorage('user');
+        var setting = LOCAL_STORAGE.getStorage('settings');
+        // post to server news infos
+        SERVER_HTTP.sendMyLocation(location);
 
-          /* Send to SERVER my POSITION with my serverkey */
-          $http.post(GLOBAL_URL+'/user/geolocation', {
-            server_token:documents_user.server_token,
-            geolocation:location
-          }).success(function(data, status, headers, config) {
-            console.log("ok send geolocation to SERVER");
-            console.log (data);
-            $scope.location = location;
-          }).error(function(data, status, headers, config) {
-            console.log("problem avec PROFIL SERVER NodeJS");
-          });
+        /*SERVER_HTTP.getProximityProfils(function(response){
 
-          /* Get from SERVER list of user proximity */
-          $http.post(GLOBAL_URL+'/proximity', {
-            server_token:documents_user.server_token,
-            geolocation:location,
-            settings:setting
-          }).success(function(data, status, headers, config) {
-            console.log("ok get proximity to SERVER");
-            console.log (data);
-            $scope.profiles = data;
-            $scope.location = location;
-          }).error(function(data, status, headers, config) {
-            console.log("problem avec proximity SERVER NodeJS");
-          });
-        });
-      
+          console.log ("ok get profil");
+          console.log(response);
+        });*/
+
+
     }, function(){
       console.log ("error GEOLOCALISATION !");
     });
 })
 /* MULTI PAGE MESSAGE */
-.controller('MessagesCtrl', function($scope, $stateParams, $http, Document) {
-  console.log ($stateParams);
+.controller('MessagesCtrl', function($scope, SERVER_HTTP) {
+  //console.log ($stateParams);
   //$scope.id_receiver = $stateParams.id_receiver;
+  
   // init: first get server message ever sended
-  Document.getUser().then(function(documents){
-    // set messages to server 
-    $http.get(GLOBAL_URL+'/messages/'+documents.server_token, {
+
+  // set messages to server
+  SERVER_HTTP.getMessages(function(data){
+    console.log (data);
+    $scope.messages = data.result;
+  }); 
+  /*$http.get(GLOBAL_URL+'/messages/'+documents.server_token, {
       server_token:documents.server_token,
     }).success(function(data, status, headers, config) {
       console.log("ok set messages to SERVER");
@@ -261,8 +183,8 @@ angular.module('starter.controllers', ['starter.services'])
       // assign messages or text
     }).error(function(data, status, headers, config) {
       console.log("problem avec set messages SERVER NodeJS");
-    });
-  });
+    });*/
+  
 
 
 
