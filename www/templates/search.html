@@ -7,10 +7,21 @@
     Your current position : {{location}}
     <br>
     <ion-list>
-	  <ion-item ng-repeat="profile in profiles">
+      <ion-item>
+        <div id="gmap" data-tap-disabled="true">map</div>
+      </ion-item>
+    </ion-list>
+    <ion-list>
+	   <ion-item ng-repeat="profile in profiles">
 	  	<a class="item item-avatar" href="#/app/profil_details/{{profile.id_fb}}">
         <img src="http://graph.facebook.com/{{profile.id_fb}}/picture?width=50&height=50"/>
-        <div class="float_left"><h2>{{profile.name}}</h2></div>
+        <div class="float_left">
+          <h2>{{profile.name}}</h2><br>
+          <h2>{{profile.birthday}} ans</h2>
+        </div>
+        <div class="float_left margin_left30">
+          {{profile.description}}
+        </div>
         <div class="align_right">distance</div>
         <p>{{profile.bio}}</p>
       </a>
@@ -29,3 +40,4 @@
 
   </ion-content>
 </ion-view>
+

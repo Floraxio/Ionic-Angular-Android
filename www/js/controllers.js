@@ -136,26 +136,30 @@ angular.module('starter.controllers', ['starter.services'])
     setting.range_age_max = 100;
   }
 })
-.controller('SearchCtrl', function($scope, $http, GEO, LOCAL_STORAGE, SERVER_HTTP) {
+.controller('SearchCtrl', function($scope, $http, GEO, GMAP, LOCAL_STORAGE, SERVER_HTTP) {
   $scope.profilDetailsView = function (profile){
     console.log (profile);
   };
-    // search geoloc for proximity
+    // ON INIT - search geoloc for proximity
     GEO.getCurrentPosition(function(location){
       console.log ("ok geoloc");
       console.log (location);
-
+      $scope.location = location;
+      //GMAP.initialize(location);
         // get user references
         var documents_user = LOCAL_STORAGE.getStorage('user');
-        var setting = LOCAL_STORAGE.getStorage('settings');
+        var settings = LOCAL_STORAGE.getStorage('settings');
         // post to server news infos
         SERVER_HTTP.sendMyLocation(location);
 
-        /*SERVER_HTTP.getProximityProfils(function(response){
+        SERVER_HTTP.getProximityProfils(location, settings, function(response){
 
           console.log ("ok get profil");
           console.log(response);
-        });*/
+          $scope.profiles = response;
+
+          // ici peuple les varible de vue
+        });
 
 
     }, function(){
@@ -168,91 +172,49 @@ angular.module('starter.controllers', ['starter.services'])
   //$scope.id_receiver = $stateParams.id_receiver;
   
   // init: first get server message ever sended
-
-  // set messages to server
-  SERVER_HTTP.getMessages(function(data){
-    console.log (data);
-    $scope.messages = data.result;
-  }); 
-  /*$http.get(GLOBAL_URL+'/messages/'+documents.server_token, {
-      server_token:documents.server_token,
-    }).success(function(data, status, headers, config) {
-      console.log("ok set messages to SERVER");
-      console.log (data);
-      $scope.messages = data.result;
-      // assign messages or text
-    }).error(function(data, status, headers, config) {
-      console.log("problem avec set messages SERVER NodeJS");
-    });*/
-  
-
-
-
-
+  SERVER_HTTP.getMessages(function(response){
+    console.log (response);
+    $scope.messages = response;
+  });
 })
 /* UNIQUE PAGE MESSAGE */
-.controller('MessageCtrl', function($scope, $stateParams, $http, Document, SERVER_HTTP) {
+.controller('MessageCtrl', function($scope, $stateParams, $http, POPUP, SERVER_HTTP) {
   $scope.id_receiver = $stateParams.id_receiver;
-
-  $scope.sendMessage = function(message){
-
-    if (message.lenght == 0){
-      alert ("remplir le message !");
-      return false;
-    }
-    // recup filed && send info to server
-    console.log (message);
-
-    SERVER_HTTP.sendMessage($stateParams.id_receiver,message, function(data){
-      console.log("message send ! ");
-      $scope.messages = data.result;
-    });
-    //update message send with server //
-  };
-
-  
-  console.log ($stateParams);
-  // init get local user
-  Document.getUser().then(function(documents){
-    console.log ('getuser');
-    console.log (documents);
+  $scope.getMessages = function(){
     // get messages to server 
-    $http.get(GLOBAL_URL+'/messages/'+documents.server_token+'/'+$stateParams.id_receiver, {
-      //server_token:,
-    }).success(function(data, status, headers, config) {
-      console.log("ok get messages to SERVER");
-      console.log (data);
-      $scope.messages = data.result;
-      // assign messages or text
-      if (data.result != null){
-        console.log ("messages a afficher");
-      }else {
-
+    SERVER_HTTP.getMessagesByProfilToSend($stateParams.id_receiver, function(response){
+      $scope.messages = response.result;
+      if (response.result.length == 0){
+        console.log ('message initial');
         $scope.message = "Prenez les devant, écrivez lui !";
       }
-    }).error(function(data, status, headers, config) {
-      console.log("problem avec get messages SERVER NodeJS");
     });
-  });
+  };
+  $scope.sendMessage = function(message){
+    console.log (message);
+    if (message == 'undefined' || message == undefined || message.length == 0){
+      POPUP.showAlert("Error","Veullez remplir le message !");
+      return false;
+    }
+    SERVER_HTTP.sendMessage($stateParams.id_receiver,message, function(response){
+      console.log("message send ! ");
+      $scope.messages = response;
+      //update message send with server //
+      $scope.getMessages();
+    });
+  };
+  $scope.getMessages();
+  
 })
-.controller('UserDetailsCtrl', function($scope, $stateParams, $http, Document) {
+.controller('UserDetailsCtrl', function($scope, $stateParams, $http, SERVER_HTTP) {
 
-  console.log ($stateParams.profile);
-  // init get local user
-  Document.getUser().then(function(documents){
-    console.log ('getuser');
-    console.log (documents);
-    // get details profil to server 
-    $http.get(GLOBAL_URL+'/user/'+$stateParams.profile+'/'+documents.server_token, {
-      //server_token:,
-    }).success(function(data, status, headers, config) {
-      console.log("ok get details user to SERVER");
-      console.log (data);
-      $scope.profile = data.result;
-    }).error(function(data, status, headers, config) {
-      console.log("problem avec get details user SERVER NodeJS");
+    console.log ($stateParams.profile);
+    //ON INIT -  get details one profil from server 
+    SERVER_HTTP.getOneUserProfil($stateParams.profile, function(response){
+      $scope.profile = response.result;  
     });
-  });
+    
+  
 })
 .controller('PlaylistCtrl', function($scope, $stateParams) {
 });

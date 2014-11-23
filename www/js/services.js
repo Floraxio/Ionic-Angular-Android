@@ -183,24 +183,21 @@ angular.module('starter.services', ['starter.config'])
     return self;
 })
 // HTTP SERVICE
-.factory('SERVER_HTTP', function($http, POPUP, LOCAL_STORAGE, DB, Document) {
+.factory('SERVER_HTTP', function($http, POPUP, LOCAL_STORAGE) {
     var self = this;
-    /*self.getMessages = function(){
+    self.getMessages = function(callback){
         // set messages to server 
           $http.get(GLOBAL_URL+'/messages/'+LOCAL_STORAGE.getStorage('servtoken'))
           .success(function(data, status, headers, config) {
             console.log("ok get messages to SERVER");
             console.log (data);
-            return data.result;
-            //$scope.messages = data.result;
-            // assign messages or text
+            callback(data.result);
           }).error(function(data, status, headers, config) {
             console.log("problem avec get messages SERVER NodeJS");
-                        POPUP.showAlert('Error !', 'Error with Server !');
-
+            POPUP.showAlert('Error !', 'Error with Server getMessages !');
             return false;
           });
-    };*/
+    };
     self.sendUser = function(user, callback){
         console.log ('send user htttp');
         $http.post(GLOBAL_URL+'/user', {
@@ -215,7 +212,7 @@ angular.module('starter.services', ['starter.config'])
             POPUP.showAlert('Error !', 'Error with Server !');
         });
     };
-    self.sendMessage = function(id_receiver,message){
+    self.sendMessage = function(id_receiver,message,callback){
           // set messages to server 
           $http.post(GLOBAL_URL+'/messages', {
             server_token: LOCAL_STORAGE.getStorage('servtoken'),
@@ -224,7 +221,7 @@ angular.module('starter.services', ['starter.config'])
           }).success(function(data, status, headers, config) {
             console.log("ok set messages to SERVER");
             console.log (data);
-            return data.result;
+            callback(data.result);
             //$scope.messages = data.result;
             // assign messages or text
           }).error(function(data, status, headers, config) {
@@ -265,20 +262,83 @@ angular.module('starter.services', ['starter.config'])
         POPUP.showAlert('Error !', 'Error with Server !');
       });
     };
-    /*self.getProximityProfils = function(location,callback){
+    self.getProximityProfils = function(location, settings,callback){
         // Get from SERVER list of user proximity
       $http.post(GLOBAL_URL+'/proximity', {
         server_token:LOCAL_STORAGE.getStorage('servtoken'),
         geolocation:location,
-        settings:setting
+        settings:settings
       }).success(function(data, status, headers, config) {
         console.log("ok get proximity to SERVER");
         console.log (data);
-        //callback(data);
+        callback(data);
       }).error(function(data, status, headers, config) {
         console.log("problem avec proximity SERVER NodeJS");
       });
-    };*/
+    };
+
+    self.getOneUserProfil = function(id_profil,callback){
+        $http.get(GLOBAL_URL+'/user/'+id_profil+'/'+LOCAL_STORAGE.getStorage('servtoken'), {
+          //server_token:,
+        }).success(function(data, status, headers, config) {
+          console.log("ok get details user to SERVER");
+          console.log (data);
+          callback(data);
+          
+        }).error(function(data, status, headers, config) {
+          console.log("problem avec get details user SERVER NodeJS");
+        });
+    };
+
+    self.getMessagesByProfilToSend = function(id_profil,callback){
+        $http.get(GLOBAL_URL+'/messages/'+LOCAL_STORAGE.getStorage('servtoken')+'/'+id_profil, {
+          //server_token:,
+        }).success(function(data, status, headers, config) {
+          console.log("ok get messages to SERVER");
+          console.log (data);
+          callback(data);
+        }).error(function(data, status, headers, config) {
+          console.log("problem avec get messages SERVER NodeJS");
+        });
+    };
     return self;
 })
+.factory('GMAP', function($http) {
+    var self = this;
+    self.initialize = function(location) {
+        console.log ('init gmap');
+        console.log (location);
+        var myLatlng = new google.maps.LatLng(43.07493,-89.381388);
+        var mapOptions = {
+          center: myLatlng,
+          zoom: 16,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(document.getElementById("gmap"),
+            mapOptions);
+        
+        //Marker + infowindow + angularjs compiled ng-click
+        var contentString = "<div><a ng-click='clickTest()'>Click me!</a></div>";
+        var compiled = $compile(contentString)($scope);
+
+        var infowindow = new google.maps.InfoWindow({
+          content: compiled[0]
+        });
+
+        var marker = new google.maps.Marker({
+          position: myLatlng,
+          map: map,
+          title: 'Uluru (Ayers Rock)'
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow.open(map,marker);
+        });
+
+        $scope.map = map;
+      }
+      //google.maps.event.addDomListener(window, 'load', initialize);
+
+    return self;
+})    
 ;
